@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "304228081724",
+    "project_id": "socialposts-44baa",
+    "storage_bucket": "socialposts-44baa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:304228081724:android:cadcb7c3846199c635e339",
+        "android_client_info": {
+          "package_name": "com.socialposts"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "304228081724-1a9gj678ve4mnvk5gdi2il7sr3kd5205.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.socialposts",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "304228081724-o134mnvt5pvkc7oi8l65mk2elcimfaae.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLwkmBkFTHbQGOkZmCVmbpzJu-uIh_TX4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "304228081724-o134mnvt5pvkc7oi8l65mk2elcimfaae.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
