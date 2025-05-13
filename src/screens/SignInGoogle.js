@@ -1,10 +1,11 @@
-// SignInGoogle.js
-import { View, Text, Image, StyleSheet, Alert } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect } from 'react';
+import auth from '@react-native-firebase/auth';
 import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 
 const SignInGoogle = () => {
-  const [userInfo, setUserInfo] = useState(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
     GoogleSignin.configure({
@@ -12,38 +13,48 @@ const SignInGoogle = () => {
     });
   }, []);
 
-  // Signin with Google function
   const signInWithGoogle = async () => {
     try {
+      // 1. Check if Google Play Services is available
       await GoogleSignin.hasPlayServices();
-      const userData = await GoogleSignin.signIn();
-      console.log(userData);
-      setUserInfo(userData);  
-    } catch (error) {
-      console.log(error);
-      Alert.alert("Sign-in Error", "Failed to sign in with Google. Please try again.");
-    }
+      
+      // 2. Get user's ID token
+      const { idToken } = await GoogleSignin.signIn();
+      
+      // 3. Create Google credential with the token
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+      
+      // 4. Sign-in with credential
+      const userCredential = await auth().signInWithCredential(googleCredential);
+      
+      // 5. Navigate to Profile screen after successful sign-in
+      navigation.navigate('Profile');
+      
+ } catch (error) {
+  console.log('Google Sign-In Error:', error);
+
+  let code = 'UNKNOWN_ERROR';
+  let message = 'An unknown error occurred during sign-in.';
+
+  if (error && typeof error === 'object') {
+    code = error.code || code;
+    message = error.message || message;
+  } else if (typeof error === 'string') {
+    message = error;
+  }
+
+  Alert.alert('Sign-in Error', `${message} (Code: ${code})`);
+}
+
   };
 
   return (
     <View style={styles.container}>
-      {userInfo ? (
-        <View style={styles.userInfoContainer}>
-          <Text style={styles.text}>Name: {userInfo.data.user.displayName}</Text>
-          <Text style={styles.text}>Email: {userInfo.data.user.email}</Text>
-          {userInfo.data.user.photo ? (
-            <Image source={{ uri: userInfo.data.user.photo }} style={styles.image} />
-          ) : (
-            <Text style={styles.text}>No photo available</Text>
-          )}
-        </View>
-      ) : (
-        <GoogleSigninButton
-          size={GoogleSigninButton.Size.Wide}
-          color={GoogleSigninButton.Color.Dark}
-          onPress={signInWithGoogle} 
-        />
-      )}
+      <GoogleSigninButton
+        size={GoogleSigninButton.Size.Wide}
+        color={GoogleSigninButton.Color.Dark}
+        onPress={signInWithGoogle}
+      />
     </View>
   );
 };
@@ -53,27 +64,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',  // Light background color
-    padding: 20,  // Adjust padding
+    backgroundColor: '#f0f0f0',
+    padding: 20,
   },
-
-  userInfoContainer: {
-    alignItems: 'center',  // Center the content within user info container
-    marginTop: 20,  // Add space above the container
-  },
-
-  text: {
-    fontSize: 18,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-
-  image: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,  // To make the image circular
-    marginBottom: 20,
-  }
 });
 
 export default SignInGoogle;
