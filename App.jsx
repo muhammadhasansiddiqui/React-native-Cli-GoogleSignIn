@@ -8,6 +8,7 @@ import SignInGoogle from './src/screens/SignInGoogle';
 import FeedScreen from './src/screens/FeedScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import post from './src/components/Post';
+import Mypost from './src/screens/Mypost';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,7 @@ const App = () => {
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Feed" component={FeedScreen} />
         <Stack.Screen name="post" component={post} />
+        <Stack.Screen name="MyPost" component={Mypost} />
       </Stack.Navigator>
     </NavigationContainer>
   );

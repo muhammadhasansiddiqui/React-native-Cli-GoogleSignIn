@@ -1,51 +1,77 @@
 import { View, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect } from 'react';
+import firestore from '@react-native-firebase/firestore';
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+} from '@react-native-google-signin/google-signin';
 import auth from '@react-native-firebase/auth';
-import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 
 const SignInGoogle = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: '304228081724-o134mnvt5pvkc7oi8l65mk2elcimfaae.apps.googleusercontent.com',
+      webClientId:
+        '304228081724-o134mnvt5pvkc7oi8l65mk2elcimfaae.apps.googleusercontent.com', // Your Web Client ID from Firebase Console
     });
-  }, []);
+
+    // Check if the user is already signed in when the component mounts
+    const checkUserSignedIn = async () => {
+      const currentUser = auth().currentUser;
+      if (currentUser) {
+        // If the user is signed in, navigate to the profile page
+        navigation.navigate('Profile');
+      }
+    };
+
+    checkUserSignedIn();
+  }, [navigation]);
 
   const signInWithGoogle = async () => {
     try {
-      // 1. Check if Google Play Services is available
       await GoogleSignin.hasPlayServices();
-      
-      // 2. Get user's ID token
-      const { idToken } = await GoogleSignin.signIn();
-      
-      // 3. Create Google credential with the token
+
+      // Sign in to Google
+      const userInfo = await GoogleSignin.signIn();
+
+      // Get the ID token
+      const { idToken } = await GoogleSignin.getTokens();
+      if (!idToken) throw new Error('Google ID token missing');
+
+      console.log('✅ ID Token:', idToken);
+
+      // Create Firebase credential
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      
-      // 4. Sign-in with credential
+
+      // Sign in with Firebase
       const userCredential = await auth().signInWithCredential(googleCredential);
+      const user = userCredential.user;
+
+      // Save user to Firestore
+      await firestore()
+        .collection('users')
+        .doc(user.uid)
+        .set(
+          {
+            name: user.displayName,
+            email: user.email,
+            photo: user.photoURL,
+            id: user.uid,
+            createdAt: firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+
+      console.log('✅ Google Sign-in Success:', user.displayName);
+      Alert.alert('Sign-in Success', 'You have successfully signed in with Google.');
       
-      // 5. Navigate to Profile screen after successful sign-in
       navigation.navigate('Profile');
-      
- } catch (error) {
-  console.log('Google Sign-In Error:', error);
-
-  let code = 'UNKNOWN_ERROR';
-  let message = 'An unknown error occurred during sign-in.';
-
-  if (error && typeof error === 'object') {
-    code = error.code || code;
-    message = error.message || message;
-  } else if (typeof error === 'string') {
-    message = error;
-  }
-
-  Alert.alert('Sign-in Error', `${message} (Code: ${code})`);
-}
-
+    } catch (error) {
+      console.log('❌ Google Sign-in Error:', error);
+      Alert.alert('Sign-in Error', error.message || 'Unknown error');
+    }
   };
 
   return (

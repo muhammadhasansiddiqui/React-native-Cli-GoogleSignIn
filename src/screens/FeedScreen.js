@@ -1,6 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
-import { Card } from 'react-native-paper';
+// import { View, Text } from 'react-native'
+// import React from 'react'
+
+// const FeedScreen = () => {
+//   return (
+//     <View>
+//       <Text>FeedScreen</Text>
+//     </View>
+//   )
+// }
+
+// export default FeedScreen
+
+import React, {useState, useEffect} from 'react';
+import {View, Text, StyleSheet, FlatList, RefreshControl} from 'react-native';
+import {Card} from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
 
 const FeedScreen = () => {
@@ -23,6 +36,7 @@ const FeedScreen = () => {
         id: doc.id,
         ...doc.data(),
       }));
+      console.log('🚀 ~ fetchPosts ~ allPosts:', allPosts);
 
       setPosts(allPosts);
     } catch (error) {
@@ -32,16 +46,24 @@ const FeedScreen = () => {
     }
   };
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({item}) => (
     <Card style={styles.postCard}>
       <Card.Content>
-        <Text style={styles.postAuthor}>{item.authorName}</Text>
+        <Text style={styles.postAuthor}>{item.displayName}</Text>
         <Text>{item.content}</Text>
-        <Text style={styles.postDate}>
-          {item.createdAt?.toDate
-            ? item.createdAt.toDate().toLocaleString()
-            : 'No date'}
-        </Text>
+      <Text style={styles.postDate}>
+  {item.createdAt?.toDate
+    ? `${item.createdAt.toDate().toLocaleDateString([], {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })} ${item.createdAt.toDate().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`
+    : 'No date'}
+</Text>
+
       </Card.Content>
     </Card>
   );
@@ -71,6 +93,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
+    color: '#333',
   },
   postCard: {
     marginBottom: 10,
