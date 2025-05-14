@@ -71,7 +71,7 @@ const ProfileScreen = () => {
           {user.photoURL && (
             <Image source={{uri: user.photoURL}} style={styles.profileImage} />
           )}
-          <Text style={styles.text}>Welcome, {user.displayName || 'User'}</Text>
+          <Text style={styles.text}>Welcome, {user.displayName }</Text>
           <Text style={styles.text}>Email: {user.email}</Text>
 
           <TouchableOpacity

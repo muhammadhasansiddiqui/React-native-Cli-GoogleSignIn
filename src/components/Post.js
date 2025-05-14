@@ -3,100 +3,79 @@ import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, To
 import { useNavigation } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import storage from '@react-native-firebase/storage';
-import { launchImageLibrary } from 'react-native-image-picker'; // Updated image picker
 
-const Post = () => {
+const Post = ({route}) => {
   const [content, setContent] = useState('');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [imageUri, setImageUri] = useState(null); // To store the selected image URI
+  const [imageUri, setImageUri] = useState(null); 
   const navigation = useNavigation();
+   const { post } = route.params || {};
 
-  useEffect(() => {
-    const currentUser = auth().currentUser;
-    setUser(currentUser);
-    
-    const subscriber = auth().onAuthStateChanged(user => {
-      setUser(user);
-    });
-    
-    return subscriber;
-  }, []);
+ useEffect(() => {
+  const currentUser = auth().currentUser;
+  setUser(currentUser);
 
-  // Function to handle image selection from the gallery or camera
-  // const handleChooseImage = () => {
-  //   const options = {
-  //     title: 'Select Image',
-  //     storageOptions: {
-  //       skipBackup: true,
-  //       path: 'images',
-  //     },
-  //   };
+  if (post?.content) {
+    setContent(post.content);
+  }
 
-  //   launchImageLibrary(options, response => {
-  //     if (response.didCancel) {
-  //       console.log('User cancelled image picker');
-  //     } else if (response.errorCode) {
-  //       console.log('ImagePicker Error:', response.errorMessage);
-  //     } else {
-  //       setImageUri(response.assets[0].uri); // Set the selected image URI
-  //     }
-  //   });
-  // };
+  const subscriber = auth().onAuthStateChanged(user => {
+    setUser(user);
+  });
 
-  // Function to upload the image to Firebase Storage
-  // const uploadImage = async () => {
-  //   if (!imageUri) return null;
+  return subscriber;
+}, [post]);
 
-  //   const fileName = imageUri.substring(imageUri.lastIndexOf('/') + 1);
-  //   const reference = storage().ref('postImages').child(fileName);
-    
-  //   await reference.putFile(imageUri); // Upload the image
-  //   const imageUrl = await reference.getDownloadURL(); // Get the download URL
+ 
 
-  //   return imageUrl;
-  // };
+const handlePost = async () => {
+  if (!user) {
+    Alert.alert('Authentication Required', 'You need to be logged in to post');
+    return;
+  }
 
-  const handlePost = async () => {
-    if (!user) {
-      Alert.alert('Authentication Required', 'You need to be logged in to post');
-      return;
-    }
+  if (!content.trim() && !imageUri) {
+    Alert.alert('Empty Post', 'Please write something or select an image before posting');
+    return;
+  }
 
-    if (!content.trim() && !imageUri) {
-      Alert.alert('Empty Post', 'Please write something or select an image before posting');
-      return;
-    }
+  try {
+    setLoading(true);
 
-    try {
-      setLoading(true);
-
-      // Upload image if it exists
-      // const imageUrl = await uploadImage();
-
-      // Add the post to Firestore
+    if (post?.id) {
+      // yha update ho raha hai
+      await firestore().collection('posts').doc(post.id).update({
+        content,
+        updatedAt: firestore.FieldValue.serverTimestamp(),
+      });
+      Alert.alert('Success', 'Post update successfully!');
+    } else {
+      // 👇 yhn nayi post ban rahi hai
       await firestore().collection('posts').add({
         content,
         userId: user.uid,
         displayName: user.displayName || 'Anonymous',
         photoURL: user.photoURL || null,
-        // image: imageUrl || null, // Save the image URL if the image exists
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
-
-      Alert.alert('Success', 'Your post was added successfully!');
-      console.log('Post added successfully');
-      setContent('');
-      setImageUri(null); // Clear the image URI after posting
-      navigation.navigate('Feed');
-    } catch (error) {
-      console.error('Post Error:', error);
-      Alert.alert('Error', `Failed to post: ${error.message}`);
-    } finally {
-      setLoading(false);
+      // write in english alert 
+      Alert.alert('Success', 'Post created successfully!');
+    
     }
-  };
+
+    setContent('');
+    setImageUri(null);
+    navigation.navigate('Feed');
+  } catch (error) {
+    console.error('Post Error:', error);
+    Alert.alert('Error', `Failed to post: ${error.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   return (
     <View style={styles.container}>
@@ -124,11 +103,12 @@ const Post = () => {
       {loading ? (
         <ActivityIndicator size="small" color="#0000ff" />
       ) : (
-        <Button 
-          title="Post" 
-          onPress={handlePost} 
-          disabled={!content.trim() && !imageUri || loading}
-        />
+   <Button
+  title={post ? "Update Post" : "Post"}
+  onPress={handlePost}
+  disabled={!content.trim() && !imageUri || loading}
+/>
+
       )}
 
       {/* See the feed button */}
