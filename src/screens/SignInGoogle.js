@@ -22,7 +22,7 @@ const SignInGoogle = () => {
       const currentUser = auth().currentUser;
       if (currentUser) {
         // If the user is signed in, navigate to the profile page
-        navigation.navigate('Profile');
+navigation.navigate('Main');
       }
     };
 
@@ -67,7 +67,7 @@ const SignInGoogle = () => {
       console.log('✅ Google Sign-in Success:', user.displayName);
       Alert.alert('Sign-in Success', 'You have successfully signed in with Google.');
       
-      navigation.navigate('Profile');
+navigation.navigate('Main');
     } catch (error) {
       console.log('❌ Google Sign-in Error:', error);
       Alert.alert('Sign-in Error', error.message || 'Unknown error');

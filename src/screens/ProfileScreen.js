@@ -1,3 +1,4 @@
+import React, {useEffect, useLayoutEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -6,10 +7,10 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import DrawerToggle from '../components/DrawerToggle'; // Import your drawer icon
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -18,7 +19,14 @@ const ProfileScreen = () => {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
 
-  // Fetch user data from Firestore
+ 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => <DrawerToggle navigation={navigation} />,
+    });
+  }, [navigation]);
+
+  // Fetch user data
   const fetchUserData = async uid => {
     if (!uid) {
       console.log('No user logged in');
@@ -71,7 +79,7 @@ const ProfileScreen = () => {
           {user.photoURL && (
             <Image source={{uri: user.photoURL}} style={styles.profileImage} />
           )}
-          <Text style={styles.text}>Welcome, {user.displayName }</Text>
+          <Text style={styles.text}>Welcome, {user.displayName}</Text>
           <Text style={styles.text}>Email: {user.email}</Text>
 
           <TouchableOpacity
@@ -86,15 +94,12 @@ const ProfileScreen = () => {
             <Text style={{color: 'blue'}}>See a Feed</Text>
           </TouchableOpacity>
 
-        {/* see my all post  */}
-        <TouchableOpacity
-          onPress={() => navigation.navigate('MyPost')}
-          style={{marginTop: 10}}>
-          <Text style={{color: 'blue'}}>See my all post</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('MyPost')}
+            style={{marginTop: 10}}>
+            <Text style={{color: 'blue'}}>See my all post</Text>
+          </TouchableOpacity>
 
-
-          {/* SIgnOut Btn */}
           <TouchableOpacity
             style={styles.postButton}
             onPress={() => {
@@ -112,6 +117,7 @@ const ProfileScreen = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
