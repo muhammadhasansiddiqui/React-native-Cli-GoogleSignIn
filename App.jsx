@@ -10,21 +10,27 @@ import FeedScreen from './src/screens/FeedScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import Post from './src/components/Post';
 import MyPost from './src/screens/Mypost';
+import DrawerContent from './src/components/DrawerContent'; 
+
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
 //  Drawer Screens
+
 function DrawerNavigator() {
   return (
-    <Drawer.Navigator initialRouteName="Profile">
+    <Drawer.Navigator
+      initialRouteName="Profile"
+      drawerContent={(props) => <DrawerContent {...props} />}>
       <Drawer.Screen name="Profile" component={ProfileScreen} />
       <Drawer.Screen name="Feed" component={FeedScreen} />
-      <Drawer.Screen name="post" component={Post} />
+      <Drawer.Screen name="Create a Post" component={Post} />
       <Drawer.Screen name="MyPost" component={MyPost} />
     </Drawer.Navigator>
   );
 }
+
 
 //  Main App
 

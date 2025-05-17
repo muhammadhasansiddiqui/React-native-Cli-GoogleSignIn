@@ -13,15 +13,21 @@ import { Card } from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
+
 
 const FeedScreen = () => {
   const [posts, setPosts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
 
-  useEffect(() => {
+
+useEffect(() => {
+  if (isFocused) {
     fetchPosts();
-  }, []);
+  }
+}, [isFocused])
 
   const fetchPosts = async () => {
     try {
@@ -51,7 +57,7 @@ const FeedScreen = () => {
       [
         {
           text: 'Edit',
-          onPress: () => navigation.navigate('post', { post: item }),
+          onPress: () => navigation.navigate('Create a Post', { post: item }),
         },
         {
           text: 'Delete',
@@ -71,42 +77,52 @@ const FeedScreen = () => {
     );
   };
 
-  const renderItem = ({ item }) => (
-    <Card style={styles.postCard}>
-      <Card.Content>
-        <View style={styles.headerRow}>
-          <View style={styles.userRow}>
-            {item.photoURL ? (
-              <Image source={{ uri: item.photoURL }} style={styles.profileImage} />
-            ) : (
-              <Icon name="account-circle" size={40} color="#ccc" />
-            )}
-            <Text style={styles.postAuthorInline}>{item.displayName}</Text>
-          </View>
-
-          <TouchableOpacity onPress={() => handleEllipsisClick(item)} style={styles.ellipsisContainer}>
-            <Icon name="dots-vertical" size={24} color="#666" />
-          </TouchableOpacity>
+const renderItem = ({ item }) => (
+  <Card style={styles.postCard}>
+    <Card.Content>
+      <View style={styles.headerRow}>
+        <View style={styles.userRow}>
+          {item.photoURL ? (
+            <Image source={{ uri: item.photoURL }} style={styles.profileImage} />
+          ) : (
+            <Icon name="account-circle" size={40} color="#ccc" />
+          )}
+          <Text style={styles.postAuthorInline}>{item.displayName || 'Anonymous'}</Text>
         </View>
 
-        <Text style={{ marginTop: 5 }}>{item.content}</Text>
+        <TouchableOpacity onPress={() => handleEllipsisClick(item)} style={styles.ellipsisContainer}>
+          <Icon name="dots-vertical" size={24} color="#666" />
+        </TouchableOpacity>
+      </View>
 
-        <Text style={styles.postDate}>
-          {item.createdAt?.toDate
-            ? `${item.createdAt.toDate().toLocaleDateString([], {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })} ${item.createdAt.toDate().toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}`
-            : 'No date'}
-        </Text>
-      </Card.Content>
-    </Card>
-  );
+      {item.content && <Text style={styles.postContent}>{item.content}</Text>}
 
+      {item.postUrl && (
+        <View style={styles.imageContainer}>
+          <Image 
+            source={{ uri: item.postUrl }} 
+            style={styles.postImage}
+            resizeMode="contain"
+            onError={(e) => console.log('Image load error:', e.nativeEvent.error)}
+          />
+        </View>
+      )}
+
+      <Text style={styles.postDate}>
+        {item.createdAt?.toDate
+          ? `${item.createdAt.toDate().toLocaleDateString([], {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })} ${item.createdAt.toDate().toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}`
+          : 'No date'}
+      </Text>
+    </Card.Content>
+  </Card>
+);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Feed</Text>
@@ -122,18 +138,23 @@ const FeedScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
+  container: { flex: 1, padding: 10, backgroundColor: '#f2f2f2' },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 10,
+    alignSelf: 'center',
     color: '#333',
   },
+  postsList: {
+    paddingBottom: 20,
+  },
   postCard: {
-    marginBottom: 10,
+    marginBottom: 16,
+    borderRadius: 12,
+    elevation: 3,
+    backgroundColor: '#fff',
+    padding: 8,
   },
   headerRow: {
     flexDirection: 'row',
@@ -144,28 +165,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  postAuthorInline: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginLeft: 10,
-  },
-  postDate: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 5,
-  },
-  postsList: {
-    paddingBottom: 20,
-  },
-  ellipsisContainer: {
-    paddingLeft: 10,
-    paddingTop: 5,
-  },
   profileImage: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#eee',
+    marginRight: 10,
+  },
+  postAuthorInline: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#444',
+  },
+  ellipsisContainer: {
+    padding: 4,
+  },
+  postContent: {
+    marginTop: 10,
+    fontSize: 15,
+    color: '#333',
+  },
+  postImage: {
+    width: '100%',
+    height: 220,
+    borderRadius: 10,
+    marginTop: 12,
+    resizeMode: 'cover',
+  },
+  postDate: {
+    marginTop: 10,
+    fontSize: 13,
+    color: '#888',
+    alignSelf: 'flex-end',
+  },
+   imageContainer: {
+    marginTop: 12,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#f5f5f5', 
   },
 });
 

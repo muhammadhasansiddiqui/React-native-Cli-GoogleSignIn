@@ -1,59 +1,42 @@
+// src/components/DrawerContent.js
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
-import { Avatar } from 'react-native-paper';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {DrawerContentScrollView, DrawerItemList} from '@react-navigation/drawer';
+import auth from '@react-native-firebase/auth';
 
 const DrawerContent = (props) => {
-  const { userInfo } = props; // You'll need to pass user info from your auth context
+  const handleSignOut = () => {
+    auth().signOut();
+    props.navigation.replace('SignIn'); // replace so user can't go back
+  };
 
   return (
     <DrawerContentScrollView {...props}>
-      <View style={styles.userInfoSection}>
-        <Avatar.Image 
-          source={{ uri: userInfo.data?.photo || 'https://example.com/default-avatar.jpg' }}
-          size={50}
-        />
-        <Text style={styles.userName}>{userInfo.data?.displayName || 'Guest'}</Text>
-        <Text style={styles.userEmail}>{userInfo.data?.email || ''}</Text>
-      </View>
       <DrawerItemList {...props} />
-      <TouchableOpacity 
-        style={styles.logoutButton}
-        onPress={() => {
-          // Handle logout
-          props.navigation.navigate('SignIn');
-        }}
-      >
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+
+      <View style={styles.signOutContainer}>
+        <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
+      </View>
     </DrawerContentScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  userInfoSection: {
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+  signOutContainer: {
+    marginTop: 20,
+    paddingHorizontal: 20,
   },
-  userName: {
-    fontSize: 16,
-    marginTop: 5,
-    fontWeight: 'bold',
-  },
-  userEmail: {
-    fontSize: 14,
-    color: '#666',
-  },
-  logoutButton: {
-    padding: 15,
-    margin: 10,
-    backgroundColor: '#f0f0f0',
+  signOutButton: {
+    backgroundColor: '#e74c3c',
+    padding: 10,
     borderRadius: 5,
+    alignItems: 'center',
   },
-  logoutText: {
-    color: 'red',
-    textAlign: 'center',
+  signOutText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 

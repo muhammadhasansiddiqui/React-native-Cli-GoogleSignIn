@@ -11,6 +11,8 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
+import com.reactnativecommunity.webview.RNCWebViewPackage;
+import com.reactnativecommunity.webview.RNCWebViewModule;
 
 class MainApplication : Application(), ReactApplication {
 

@@ -19,7 +19,6 @@ const ProfileScreen = () => {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
 
- 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => <DrawerToggle navigation={navigation} />,
@@ -59,6 +58,7 @@ const ProfileScreen = () => {
       } else {
         setUserData(null);
         setLoading(false);
+        navigation.replace('SignIn');
       }
     });
     return unsubscribe;
@@ -84,40 +84,39 @@ const ProfileScreen = () => {
 
           <TouchableOpacity
             style={styles.postButton}
-            onPress={() => navigation.navigate('post')}>
-            <Text style={styles.buttonText}>Add Post</Text>
+            onPress={() => navigation.navigate('Create a Post')}>
+            <Text style={styles.buttonText}>➕ Add Post</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => navigation.navigate('Feed')}
-            style={{marginTop: 10}}>
-            <Text style={{color: 'blue'}}>See a Feed</Text>
+            style={styles.linkButton}
+            onPress={() => navigation.navigate('Feed')}>
+            <Text style={styles.linkText}>📰 See Feed</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => navigation.navigate('MyPost')}
-            style={{marginTop: 10}}>
-            <Text style={{color: 'blue'}}>See my all post</Text>
+            style={styles.linkButton}
+            onPress={() => navigation.navigate('MyPost')}>
+            <Text style={styles.linkText}>📁 See My Posts</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.postButton}
+            style={[styles.postButton, {backgroundColor: '#dc3545'}]}
             onPress={() => {
               auth().signOut();
               navigation.navigate('SignIn');
             }}>
-            <Text style={styles.buttonText}>Sign Out</Text>
+            <Text style={styles.buttonText}>🚪 Sign Out</Text>
           </TouchableOpacity>
         </>
       ) : (
         <Text style={styles.text}>User details not found.</Text>
       )}
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {/* {error && <Text style={styles.errorText}>{error}</Text>} */}
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -125,27 +124,47 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#f4f4f4',
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#007bff',
   },
   text: {
-    fontSize: 16,
-    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 8,
   },
   postButton: {
-    backgroundColor: 'blue',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 20,
-    width: 150,
+    backgroundColor: '#007bff',
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 30,
+    marginTop: 15,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: {width: 0, height: 2},
+    shadowRadius: 5,
+    elevation: 5,
+    width: '80%',
     alignItems: 'center',
   },
   buttonText: {
-    color: 'white',
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  linkButton: {
+    marginTop: 10,
+    
+  },
+  linkText: {
+    color: '#007bff',
     fontSize: 16,
   },
   errorText: {
