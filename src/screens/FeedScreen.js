@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 
 const FeedScreen = () => {
@@ -85,13 +86,13 @@ const renderItem = ({ item }) => (
           {item.photoURL ? (
             <Image source={{ uri: item.photoURL }} style={styles.profileImage} />
           ) : (
-            <Icon name="account-circle" size={40} color="#ccc" />
+            <Icon name="menu" size={40} color="#993636" />
           )}
           <Text style={styles.postAuthorInline}>{item.displayName || 'Anonymous'}</Text>
         </View>
 
         <TouchableOpacity onPress={() => handleEllipsisClick(item)} style={styles.ellipsisContainer}>
-          <Icon name="dots-vertical" size={24} color="#666" />
+<Icon name="rocket" size={30} color="#900" />
         </TouchableOpacity>
       </View>
 
@@ -176,9 +177,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#444',
   },
-  ellipsisContainer: {
-    padding: 4,
-  },
   postContent: {
     marginTop: 10,
     fontSize: 15,
@@ -203,6 +201,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#f5f5f5', 
   },
+  ellipsisContainer: {
+  padding: 4,
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 32,
+  height: 32,
+},
+
 });
 
 export default FeedScreen;

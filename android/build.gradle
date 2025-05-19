@@ -1,3 +1,14 @@
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            force 'androidx.core:core:1.13.1'
+        }
+
+        exclude group: 'com.android.support', module: 'support-compat'
+        exclude group: 'com.android.support'
+    }
+}
+
 buildscript {
     ext {
         buildToolsVersion = "35.0.0"

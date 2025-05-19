@@ -22,6 +22,7 @@ const SignInGoogle = () => {
       const currentUser = auth().currentUser;
       if (currentUser) {
         // If the user is signed in, navigate to the profile page
+        Alert.alert('Sign-in Success', 'You have successfully signed in with Google.');
 navigation.navigate('Main');
       }
     };

@@ -10,12 +10,15 @@ import {
   TouchableOpacity,
   Image,
   Platform,
+  PermissionsAndroid
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { launchImageLibrary } from 'react-native-image-picker';
 import * as Progress from 'react-native-progress';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
+
 
 
 const Post = ({ route }) => {
@@ -43,34 +46,128 @@ const Post = ({ route }) => {
     return unsubscribe;
   }, [post]);
 
-  // Select image
-  const handleChooseImage = async () => {
-    try {
-      const result = await launchImageLibrary({
-        mediaType: 'photo',
-        quality: 0.8,
-        maxWidth: 1024,
-        maxHeight: 1024,
-      });
 
-      if (result.didCancel) return;
-      if (result.errorCode) {
-        Alert.alert('Image Picker Error', result.errorMessage || 'Unknown error');
-        console.log('Image Picker Error:', result.errorMessage);
-        return;
-      }
-
-      const uri = result.assets?.[0]?.uri;
-      if (!uri) return;
-
-      setImageUri(uri);
-      console.log('Image selected:', uri);
-      Alert.alert('Image Selected', 'Image selected successfully.');
-    } catch (error) {
-      console.error('Image selection failed:', error);
-      Alert.alert('Error', 'Image selection failed');
+const requestStoragePermission = async () => {
+  if (Platform.OS === 'android') {
+    if (Platform.Version >= 33) {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+        {
+          title: 'Storage Permission',
+          message: 'App needs access to your media to upload images.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } else {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        {
+          title: 'Storage Permission',
+          message: 'App needs access to your storage to upload images.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
     }
-  };
+  }
+  return true; 
+};
+
+
+
+const requestGalleryPermission = async () => {
+  let permission;
+
+  if (Platform.OS === 'android') {
+    const sdkInt = Platform.constants?.Release || 30;
+
+    if (sdkInt >= 33) {
+      permission = PERMISSIONS.ANDROID.READ_MEDIA_IMAGES;
+    } else {
+      permission = PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
+    }
+  } else {
+    permission = PERMISSIONS.IOS.PHOTO_LIBRARY;
+  }
+
+  const result = await check(permission);
+  if (result === RESULTS.DENIED || result === RESULTS.BLOCKED) {
+    const reqResult = await request(permission);
+    return reqResult === RESULTS.GRANTED;
+  }
+
+  return result === RESULTS.GRANTED;
+};
+
+
+  // Select image
+const handleChooseImage = async () => {
+  let permissionGranted = false;
+
+  if (Platform.OS === 'android') {
+    const sdkInt = Platform.Version;
+
+    const permission =
+      sdkInt >= 33
+        ? PERMISSIONS.ANDROID.READ_MEDIA_IMAGES
+        : PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
+
+    const result = await check(permission);
+    if (result === RESULTS.GRANTED) {
+      permissionGranted = true;
+    } else {
+      const requestResult = await request(permission);
+      permissionGranted = requestResult === RESULTS.GRANTED;
+    }
+  } else {
+    const result = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+    permissionGranted = result === RESULTS.GRANTED;
+  }
+
+  if (!permissionGranted) {
+    Alert.alert('Permission Denied', 'Cannot access gallery without permission.');
+    return;
+  }
+
+  try {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      quality: 0.8,
+      maxWidth: 1024,
+      maxHeight: 1024,
+    });
+
+    if (result.didCancel) {
+      console.log('User cancelled image picker');
+      Alert.alert('Image Selection Cancelled');
+      return;
+    }
+
+    if (result.errorCode) {
+      console.log('Image Picker Error Code:', result.errorCode);
+      Alert.alert('Error', result.errorMessage || 'Unknown error');
+      return;
+    }
+
+    const uri = result.assets?.[0]?.uri;
+    if (uri) {
+      setImageUri(uri);
+      Alert.alert('Image Selected');
+    } else {
+      Alert.alert('No image found');
+    }
+  } catch (err) {
+    console.error('Gallery open error:', err);
+    Alert.alert('Error', 'Failed to open gallery');
+  }
+};
+
+
 
   // Upload image to Cloudinary
 const uploadImage = async (uri) => {
